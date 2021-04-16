@@ -1,31 +1,51 @@
 use itertools::Itertools;
 
-fn to_weights(mut m:i32) -> i32 {
-    let mut sum = 0;
-    while m != 0 {
-        sum += m % 10;
-        m /= 10;
-    }
-    sum
+fn weight(s: &str) -> u32 {
+    s.chars().map(|c| c.to_digit(10).unwrap()).sum()
 }
 
 fn closest(s: &str) -> String {
-    if s.is_empty() {
-        return "".to_string()
-    }
-    let result = s
+    let (_, a, b) = s
+        .trim()
         .split_whitespace()
         .enumerate()
-        .map(|x| {
-            let v = x.1.parse::<i32>().unwrap();
-            (to_weights(v), x.0 as i32, v)
-        })
-        .sorted_by_key(|x| x.0)
-        .collect::<Vec<_>>();
-    let final_result = result.iter().as_slice().windows(2).min_by_key(|&x|
-        (x.get(0).unwrap().0 - x.get(1).unwrap().0).abs()).unwrap().clone();
-    format!("[({},{},{})({},{},{})]",final_result[0].0,final_result[0].1,final_result[0].2,final_result[1].0,final_result[1].1,final_result[1].2,)
+        .map(|(i, x)| (weight(x) as i64, i, x))
+        .sorted()
+        .tuple_windows()
+        .map(|(a, b)| ((a.0 - b.0).abs(), a, b))
+        .min()
+        .unwrap();
+    format!("[({},{},{})({},{},{})]", a.0, a.1, a.2, b.0, b.1, b.2)
 }
+
+// use itertools::Itertools;
+//
+// fn to_weights(mut m:i32) -> i32 {
+//     let mut sum = 0;
+//     while m != 0 {
+//         sum += m % 10;
+//         m /= 10;
+//     }
+//     sum
+// }
+//
+// fn closest(s: &str) -> String {
+//     if s.is_empty() {
+//         return "".to_string()
+//     }
+//     let result = s
+//         .split_whitespace()
+//         .enumerate()
+//         .map(|x| {
+//             let v = x.1.parse::<i32>().unwrap();
+//             (to_weights(v), x.0 as i32, v)
+//         })
+//         .sorted_by_key(|x| x.0)
+//         .collect::<Vec<_>>();
+//     let final_result = result.iter().as_slice().windows(2).min_by_key(|&x|
+//         (x.get(0).unwrap().0 - x.get(1).unwrap().0).abs()).unwrap().clone();
+//     format!("[({},{},{})({},{},{})]",final_result[0].0,final_result[0].1,final_result[0].2,final_result[1].0,final_result[1].1,final_result[1].2,)
+// }
 
 #[cfg(test)]
 mod tests {
